@@ -472,7 +472,7 @@ function renderWorkout(){
   }
 }
 function tick(){
-  if(timeLeft<=3&&timeLeft>1){ speak(String(timeLeft-1)); bigCountdown(timeLeft-1); vibe(20); }
+  if(timeLeft<=3&&timeLeft>1){ if(phase!=="GET READY") speak(String(timeLeft-1)); bigCountdown(timeLeft-1); vibe(20); }
   if(timeLeft<=1){ advance(); return; }
   timeLeft--; if(phase!=="GET READY") totalLeft=Math.max(0,totalLeft-1);
   const c=$("count");
@@ -483,7 +483,7 @@ function tick(){
 function advance(){
   clearInterval(timer); flashScreen(PC[phase]); vibe([30,40,30]); ringReset=true;
   if(phase==="GET READY"){
-    phase="WORK"; timeLeft=S.workSec; renderWorkout(); if(running) timer=setInterval(tick,1000); return;
+    phase="WORK"; timeLeft=S.workSec; speak(exercises[exIdx].name); renderWorkout(); if(running) timer=setInterval(tick,1000); return;
   }
   if(phase==="WORK"){
     if(round>=S.rounds){ phase="CIRCUIT REST"; timeLeft=S.circuitRestSec; done++; speak(`Circuit ${circuitN} done! Rest ${S.circuitRestSec} seconds.`); }
@@ -499,14 +499,14 @@ function advance(){
 function finishWorkout(){
   $("donestat").textContent=`${done} circuit${done!==1?"s":""} · ${S.totalMinutes} min crushed. No excuses. 🔥`;
   document.body.style.background="#0b1120"; setAmbient("#f97316","#f59e0b");
-  showScreen("done"); speakHype([{t:"GET GHENJED!",rate:0.8,pitch:0.35,gap:220},{t:"WORKOUT SMASHED. NO EXCUSES!",rate:0.9,pitch:0.4}]); vibe([60,50,60,50,120]); launchConfetti();
+  showScreen("done"); playGenged(()=>speak("Workout smashed. No excuses!")); vibe([60,50,60,50,120]); launchConfetti();
 }
 function startWorkout(){
   exercises=shuffle(pool()).slice(0,S.exerciseCount);
   if(!exercises.length) return;
   phase="GET READY"; prevPhase=null; exIdx=0; round=1; circuitN=1; done=0; timeLeft=8; totalLeft=S.totalMinutes*60; running=true; ringReset=true;
   showScreen("workout"); renderWorkout();
-  speakHype(HYPE_INTRO, ()=>speak(`First up — ${exercises[0].name}`)); vibe([60,60,60,60,120]);
+  playGenged(); vibe([60,60,60,60,120]);
   timer=setInterval(tick,1000);
 }
 $("startbtn").onclick=startWorkout;
